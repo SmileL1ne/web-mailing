@@ -20,16 +20,16 @@ func NewMongo(client *mongo.Client) DataStore {
 	return &Mongo{MailDB: client}
 }
 
-func (mg *Mongo) AddSubscriber(subs model.Subscriber) (bool, string, error) {
+func (mg *Mongo) AddSubscriber(subsriber model.Subscriber) (bool, string, error) {
 	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelCtx()
 
 	var res bson.M
-	filter := bson.D{{Key: "email", Value: subs.Email}}
+	filter := bson.D{{Key: "email", Value: subsriber.Email}}
 	err := Default(mg.MailDB, "subscribers").FindOne(ctx, filter, nil).Decode(res)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			_, err := Default(mg.MailDB, "subscribers").InsertOne(ctx, subs)
+			_, err := Default(mg.MailDB, "subscribers").InsertOne(ctx, subsriber)
 			if err != nil {
 				return false, "", fmt.Errorf("AddSubscriber: cannot register this account: %v\n", err)
 			}

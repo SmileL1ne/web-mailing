@@ -8,14 +8,14 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
 
 	"code.sajari.com/docconv"
-	"github.com/SmileL1ne/web-mailing/db"
 	"github.com/SmileL1ne/web-mailing/model"
 )
 
-func ReadFrom(r *http.Request, subs model.Subscriber) (model.Subscriber, error) {
+func ReadForm(r *http.Request, subs model.Subscriber) (model.Subscriber, error) {
 	if err := r.ParseForm(); err != nil {
 		log.Println(err)
 		return model.Subscriber{}, err
@@ -29,7 +29,7 @@ func ReadFrom(r *http.Request, subs model.Subscriber) (model.Subscriber, error) 
 	return subs, nil
 }
 
-func JSONWriter(w http.ResponseWriter, dataStore db.DataStore, msg string, statusCode int) error {
+func JSONWriter(w http.ResponseWriter, msg string, statusCode int) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
@@ -99,4 +99,17 @@ func ReadMultiForm(w http.ResponseWriter, r *http.Request, mail model.MailUpload
 	return mail, nil
 }
 
-func HTMLRender(w *http.ResponseWriter)
+func HTMLRender(w http.ResponseWriter, r *http.Request, dt any) error {
+	filePath := "./index.html"
+	tmp, err := template.ParseFiles(filePath)
+	if err != nil {
+		return fmt.Errorf("HTMLReader Error: failed to parse file: %v\n", err)
+	}
+
+	err = tmp.Execute(w, dt)
+	if err != nil {
+		return fmt.Errorf("HTMLReader Error: failed to execute template: %v\n", err)
+	}
+
+	return nil
+}
