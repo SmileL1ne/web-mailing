@@ -16,17 +16,23 @@ import (
 )
 
 func ReadForm(r *http.Request, subs model.Subscriber) (model.Subscriber, error) {
-	if err := r.ParseForm(); err != nil {
+	err := json.NewDecoder(r.Body).Decode(&subs)
+	if err != nil {
 		log.Println(err)
 		return model.Subscriber{}, err
 	}
-	subs = model.Subscriber{
-		FirstName: r.Form.Get("first_name"),
-		LastName:  r.Form.Get("last_name"),
-		Email:     r.Form.Get("email"),
-		Interest:  r.Form.Get("interest"),
-	}
 	return subs, nil
+	// if err := r.ParseForm(); err != nil {
+	// 	log.Println(err)
+	// 	return model.Subscriber{}, err
+	// }
+	// subs = model.Subscriber{
+	// 	FirstName: r.Form.Get("first_name"),
+	// 	LastName:  r.Form.Get("last_name"),
+	// 	Email:     r.Form.Get("email"),
+	// 	Interest:  r.Form.Get("interest"),
+	// }
+	// return subs, nil
 }
 
 func JSONWriter(w http.ResponseWriter, msg string, statusCode int) error {

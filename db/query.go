@@ -20,16 +20,16 @@ func NewMongo(client *mongo.Client) DataStore {
 	return &Mongo{MailDB: client}
 }
 
-func (mg *Mongo) AddSubscriber(subsriber model.Subscriber) (bool, string, error) {
+func (mg *Mongo) AddSubscriber(subs model.Subscriber) (bool, string, error) {
 	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelCtx()
 
 	var res bson.M
-	filter := bson.D{{Key: "email", Value: subsriber.Email}}
-	err := Default(mg.MailDB, "subscribers").FindOne(ctx, filter, nil).Decode(res)
+	filter := bson.D{{Key: "email", Value: subs.Email}}
+	err := Default(mg.MailDB, "subscribers").FindOne(ctx, filter).Decode(&res)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			_, err := Default(mg.MailDB, "subscribers").InsertOne(ctx, subsriber)
+			_, err := Default(mg.MailDB, "subscribers").InsertOne(ctx, subs)
 			if err != nil {
 				return false, "", fmt.Errorf("AddSubscriber: cannot register this account: %v\n", err)
 			}
@@ -56,7 +56,7 @@ func (mg *Mongo) FindSubscribers() ([]primitive.M, error) {
 	defer cancelCtx()
 
 	var res []bson.M
-	cursor, err := Default(mg.MailDB, "subscribers").Find(ctx, nil)
+	cursor, err := Default(mg.MailDB, "subscribers").Find(ctx, bson.D{})
 	if err != nil {
 		return []bson.M{}, err
 	}
