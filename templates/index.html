@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mail App</title>
+  </head>
+  <body>
+    <h1>It's a mail app!</h1>
+
+    <!-- Subscription form -->
+    <div class="subscribe-form">
+      <form action="/api/subscribe" method="post">
+        <label for="first_name">First Name:</label>
+        <div class="user-input">
+          <input type="text" name="first_name" id="first_name" />
+        </div>
+        <label for="last_name">Last Name:</label>
+        <div class="user-input">
+          <input type="text" name="last_name" id="last_name" />
+        </div>
+        <label for="email">Email:</label>
+        <div class="user-input">
+          <input type="email" name="email" id="email" />
+        </div>
+        <label for="interest">Interest:</label>
+        <div class="user-input">
+          <input type="text" name="interest" id="interest" />
+        </div>
+
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+
+    <br>
+    <br>
+    <br>
+
+    <!-- Sending emails to subscribers form -->
+    <div class="send-form">
+        <form action="/api/send" method="post" enctype="multipart/form-data">
+            <label for="title">Title:</label>
+            <div class="user-input">
+                <input type="text" name="docx_name" id="title"/>
+            </div>
+            <label for="document"></label>
+            <div class="user-input">
+                <input type="file" name="docx" id="document">
+            </div>
+            <button type="submit">Send emails!</button>
+        </form>
+    </div>
+
+    <!-- Delete subscriber form -->
+    <div class="usubscribe-form">
+      <form action="/api/unsubscribe" method="post">
+        <label for="del_email">Email:</label>
+        <div class="user-input">
+          <input type="email" name="email" id="del_email"/>
+        </div>
+        <button type="submit">Unsubscribe</button>
+      </form>
+    </div>
+  </body>
+</html>

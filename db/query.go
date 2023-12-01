@@ -31,11 +31,11 @@ func (mg *Mongo) AddSubscriber(subs model.Subscriber) (bool, string, error) {
 		if err == mongo.ErrNoDocuments {
 			_, err := Default(mg.MailDB, "subscribers").InsertOne(ctx, subs)
 			if err != nil {
-				return false, "", fmt.Errorf("AddSubscriber: cannot register this account: %v\n", err)
+				return false, "", fmt.Errorf("AddSubscriber: cannot register this account: %v", err)
 			}
 			return true, fmt.Sprintf("New subscriber added"), nil
 		}
-		log.Fatalf("AddSubsriber: cannot query database: %v\n", err)
+		log.Fatalf("AddSubsriber: cannot query database: %v", err)
 	}
 	return true, "", nil
 }
@@ -69,4 +69,24 @@ func (mg *Mongo) FindSubscribers() ([]primitive.M, error) {
 		return nil, fmt.Errorf("FindSubsribers: cursor error: %v\n", err)
 	}
 	return res, nil
+}
+
+func (mg *Mongo) DeleteSubscriber(email string) (bool, error) {
+	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelCtx()
+
+	var res bson.M
+	filter := bson.D{{Key: "email", Value: email}}
+	err := Default(mg.MailDB, "subscribers").FindOne(ctx, filter).Decode(&res)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, fmt.Errorf("Couldn't find subscriber - %s", email)
+		}
+		log.Fatalf("DeleteSubscriber: couldn't query database - %v", err)
+	}
+	_, err = Default(mg.MailDB, "subscribers").DeleteOne(ctx, filter)
+	if err != nil {
+		return true, fmt.Errorf("DeleteSubscriber: cannot delete subscriber - %v", err)
+	}
+	return true, nil
 }

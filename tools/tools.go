@@ -15,24 +15,24 @@ import (
 	"github.com/SmileL1ne/web-mailing/model"
 )
 
-func ReadForm(r *http.Request, subs model.Subscriber) (model.Subscriber, error) {
-	err := json.NewDecoder(r.Body).Decode(&subs)
-	if err != nil {
-		log.Println(err)
-		return model.Subscriber{}, err
-	}
-	return subs, nil
-	// if err := r.ParseForm(); err != nil {
+func ReadForm(r *http.Request, sub model.Subscriber) (model.Subscriber, error) {
+	// err := json.NewDecoder(r.Body).Decode(&subs)
+	// if err != nil {
 	// 	log.Println(err)
 	// 	return model.Subscriber{}, err
 	// }
-	// subs = model.Subscriber{
-	// 	FirstName: r.Form.Get("first_name"),
-	// 	LastName:  r.Form.Get("last_name"),
-	// 	Email:     r.Form.Get("email"),
-	// 	Interest:  r.Form.Get("interest"),
-	// }
 	// return subs, nil
+	if err := r.ParseForm(); err != nil {
+		log.Println(err)
+		return model.Subscriber{}, err
+	}
+	sub = model.Subscriber{
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Email:     r.Form.Get("email"),
+		Interest:  r.Form.Get("interest"),
+	}
+	return sub, nil
 }
 
 func JSONWriter(w http.ResponseWriter, msg string, statusCode int) error {
@@ -106,7 +106,7 @@ func ReadMultiForm(w http.ResponseWriter, r *http.Request, mail model.MailUpload
 }
 
 func HTMLRender(w http.ResponseWriter, r *http.Request, dt any) error {
-	filePath := "./index.html"
+	filePath := "./templates/index.html"
 	tmp, err := template.ParseFiles(filePath)
 	if err != nil {
 		return fmt.Errorf("HTMLReader Error: failed to parse file: %v\n", err)

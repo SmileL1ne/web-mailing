@@ -37,10 +37,10 @@ func (ma *MailApp) Home() http.HandlerFunc {
 
 func (ma *MailApp) GetSubscriber() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var subs model.Subscriber
-		subsriber, err := tools.ReadForm(r, subs)
+		var sub model.Subscriber
+		subsriber, err := tools.ReadForm(r, sub)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("failed to read json: %v\n", err), http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("Failed to read json: %v\n", err), http.StatusBadRequest)
 			return
 		}
 		ok, msg, err := ma.MailDB.AddSubscriber(subsriber)
@@ -97,7 +97,33 @@ func (ma *MailApp) SendMail() http.HandlerFunc {
 			ma.MailChan <- mail
 		}
 
-		err = tools.JSONWriter(w, fmt.Sprintf("Mail sent to %d subscribers\n", len(res)), http.StatusOK)
+		err = tools.JSONWriter(w, fmt.Sprintf("Mail sent to %d subscribers", len(res)), http.StatusOK)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (ma *MailApp) DeleteSubscriber() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to read from unsubscribe form: %v", err), http.StatusBadGateway)
+			return
+		}
+		email := r.Form.Get("email")
+		ok, err := ma.MailDB.DeleteSubscriber(email)
+		if !ok {
+			err = tools.JSONWriter(w, "No such subscriber", http.StatusBadRequest)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			return
+		}
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to delete subscriber: %v", err), http.StatusInternalServerError)
+		}
+		err = tools.JSONWriter(w, "Sucessfully deleted subscriber", http.StatusOK)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
